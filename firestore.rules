@@ -1,0 +1,26 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    match /holidays/{holiday} {
+      allow read: if true;  // Allow reading holiday data
+      allow write: if 
+        // Validate the structure of holiday documents
+        request.resource.data.date is string &&
+        request.resource.data.type in ['annual-leave', 'public-holiday', 'workplace-closure'] &&
+        request.resource.data.description is string &&
+        // Ensure date is within academic year
+        request.resource.data.date >= '2024-09-01' &&
+        request.resource.data.date <= '2025-08-31';
+    }
+    
+    match /settings/{setting} {
+      allow read: if true;
+      allow write: if 
+        // Validate settings structure
+        request.resource.data.totalDays is number &&
+        request.resource.data.totalDays >= 0 &&
+        request.resource.data.totalDays <= 365;
+    }
+  }
+}
